@@ -1,0 +1,314 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    background-image: url('../images/screen-bg.png');
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    box-sizing: border-box;
+    color: #fff;
+}
+
+body {
+    padding: 30px 45px;
+}
+
+.screen-container {
+    position: relative;
+    height: 100%;
+    width: 100%;
+}
+
+
+/* 图表头部内容 */
+
+.screen-container-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    width: 100%;
+    height: 60px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding-bottom: 15px;
+}
+
+.screen-header-lable {
+    width: 300px;
+}
+
+.screen-time {
+    font-size: 1rem;
+    display: flex;
+    align-items: flex-end;
+}
+
+.screen-title h2 {
+    font-size: 3rem;
+    letter-spacing: 25px;
+}
+
+
+/* 图表主要内容 */
+
+.screen-container-body {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    padding-top: 75px;
+}
+
+.screen-play-pox {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    padding-top: 75px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.screen-play-box {
+    height: 50%;
+    width: 50%;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+.play-box-bg {
+    height: 100%;
+    width: 100%;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.screen-play-box:nth-child(1)>.play-box-bg {
+    background-image: url('../images/screen-box-bg1.png');
+}
+
+.screen-play-box:nth-child(2)>.play-box-bg {
+    background-image: url('../images/screen-box-bg2.png');
+}
+
+.screen-play-box:nth-child(3)>.play-box-bg {
+    background-image: url('../images/screen-box-bg3.png');
+}
+
+.screen-play-box:nth-child(4)>.play-box-bg {
+    background-image: url('../images/screen-box-bg4.png');
+}
+
+
+/* 图表展示布局内容 */
+
+.screen-info-box {
+    width: 30%;
+    height: 100%;
+}
+
+.screen-chart-box {
+    width: 70%;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 15px 15px 15px 20px;
+    border-radius: 50% 0 0 0;
+}
+
+
+/*第一区域 - 地图盒子 */
+
+#chart-map-box {
+    width: 100%;
+    height: 100%;
+    border-radius: 20% 0 0 0;
+    overflow: hidden;
+    border: 1px solid #fff;
+    box-shadow: 0 0 2px #fff;
+}
+
+.screen-info-box {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    line-height: 26px;
+}
+
+.map-info-box {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding-bottom: 15px;
+    font-size: 1rem;
+}
+
+.map-info-box:first-child {
+    margin-top: 50px;
+}
+
+.map-info-lable {
+    color: #c1272d;
+    min-width: 57px;
+}
+
+.map-info-text {
+    padding-right: 10px;
+}
+
+
+/* 第二三四区域 */
+
+#chart-line-box,
+#chart-barL-box,
+#chart-barR-box {
+    width: 100%;
+    height: 100%;
+}
+
+
+/* 图表中心内容 */
+
+.screen-flex-box {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.screen-center-box {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 25%;
+    height: 0;
+    padding-bottom: 25%;
+    border-radius: 50%;
+    z-index: 100;
+    -webkit-transform: translate(-50%, -50%);
+    -moz-transform: translate(-50%, -50%);
+    -o-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    background-image: url('../images/screen-center-bg.png');
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    border: 2px solid #fff;
+}
+
+.screen-center-circle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 17%;
+    height: 0;
+    padding-bottom: 17%;
+    border-radius: 50%;
+    z-index: 102;
+    -webkit-transform: translate(-50%, -50%);
+    -moz-transform: translate(-50%, -50%);
+    -o-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    background-image: url('../images/screen-center-circle.png');
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    box-sizing: border-box;
+}
+
+.center-circle-box {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    align-items: center;
+    color: #000;
+}
+
+.center-circle-box>div {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+}
+
+.center-circle-logo {
+    height: 25%;
+    display: flex;
+    align-items: flex-end !important;
+}
+
+.center-circle-logo>img {
+    height: 65%;
+}
+
+.center-circle-title {
+    color: #2a3d51;
+    font-size: 1.2rem;
+    font-weight: bold;
+    height: 20%;
+    width: 80%;
+    align-items: center;
+}
+
+.center-circle-score {
+    color: #e69013;
+    font-size: 5.2rem;
+    height: 30%;
+    line-height: 30%;
+}
+
+.center-circle-sgin {
+    color: #e69013;
+    font-size: 1rem;
+    height: 15%;
+    line-height: 15%;
+}
+
+.center-line-top {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    margin-left: -8px;
+    background-image: url('../images/screen-bg.png');
+    background-repeat: repeat;
+    height: 100%;
+    width: 16px;
+    z-index: 101;
+}
+
+.center-line-left {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    margin-top: -8px;
+    background-image: url('../images/screen-bg.png');
+    background-repeat: repeat;
+    height: 16px;
+    width: 100%;
+    z-index: 101;
+}
+
+.flex-row-reverse {
+    flex-direction: row-reverse !important;
+}
+
+.screen-chart-pull {
+    width: 100%;
+}

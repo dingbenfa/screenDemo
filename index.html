@@ -8,6 +8,9 @@
     <title>建行大屏展示</title>
     <link rel="stylesheet" href="css/screenIndex.css">
     <script src="js/jquery-3.1.1.min.js" type="text/javascript"></script>
+    <script src="js/http.js"></script>
+    <script src="js/base.config.js"></script>
+
     <!--引入百度地图的jssdk，这里需要使用你在百度地图开发者平台申请的 ak-->
     <script src="http://api.map.baidu.com/api?ak=WGNwug6OZXNKtSvSAKQGXGDjHQjQ0cQQ&v=2.0"></script>
 
@@ -26,7 +29,7 @@
             <div class="screen-title">
                 <h2>感知制能</h2>
             </div>
-            <div class="screen-header-lable screen-time">更新时间：<span>2019-07-03</span></div>
+            <div class="screen-header-lable screen-time">更新时间：<span id="chart-uptate-time">2019-07-03</span></div>
         </div>
 
         <div class="screen-container-body">
@@ -38,8 +41,8 @@
                 <div class="screen-center-circle">
                     <div class="center-circle-box">
                         <div class="center-circle-logo"><img src="../screenDemo/images/wsn-logo.png" alt="" srcset=""></div>
-                        <div class="center-circle-title">苏州相城区XX铜业有限公司</div>
-                        <div class="center-circle-score">90</div>
+                        <div class="center-circle-title" id="chart-title">苏州相城区<br>XX铜业有限公司</div>
+                        <div class="center-circle-score" id="chart-score">90</div>
                         <div class="center-circle-sgin">企业评分</div>
                     </div>
                 </div>

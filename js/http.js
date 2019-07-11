@@ -1,4 +1,4 @@
-var httpRequest = function(method, api, param, async, cType, jType, dType, successCallback, errorCallBack) {
+var httpRequest = function(method, api, param, async, cType, jType, dType, successCallback, errorCallBack, timeout) {
     method = method || "get"; //默认get方式
     async = async || false; //默认同步
     dType = dType || 'json'; //默认json

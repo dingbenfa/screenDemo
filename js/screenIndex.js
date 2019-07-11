@@ -1,69 +1,170 @@
 $(function() {
     var app = {
+        refreshTime: 3600000, //所有api刷新时长 -- 1h
         data: {
             regionName: '苏州相城区',
-            enterpriseName: '大大铜业有限公司',
-            rating: '90',
-            refreshDate: '2019-07-03',
+            enterpriseName: '',
+            rating: '',
+            refreshDate: '',
             mapChartData: {
                 locationName: '苏州市-滨湖区-滨湖路49号',
-                bankName: '银行预留文本',
-                tagName: '金属加工',
-                areaLocations: [{
-                        "lng": 120.30,
-                        "lat": 31.57
-                    }, {
-                        "lng": 120.33,
-                        "lat": 31.59
-                    },
-                    {
-                        "lng": 120.32,
-                        "lat": 31.61
-                    }
-                ]
+                bankName: '',
+                tagName: '',
+                areaLocations: []
             },
             lineChartData: {
-                legendData: ['铣床', '冷轧机-01', '冷轧机-02', '电表'],
-                xAxisData: ['2019-06-15', '2019-06-16', '2019-06-17', '2019-06-18', '2019-06-19', '2019-06-20', '2019-06-21'],
-                seriesData: [{
-                        name: '铣床',
-                        type: 'line',
-                        stack: '总量',
-                        yAxisIndex: 1,
-                        data: [12, 13, 10, 13, 9, 23, 21]
-                    },
-                    {
-                        name: '冷轧机-01',
-                        type: 'line',
-                        stack: '总量',
-                        yAxisIndex: 1,
-                        data: [22, 18, 19, 23, 29, 33, 31]
-                    },
-                    {
-                        name: '冷轧机-02',
-                        type: 'line',
-                        stack: '总量',
-                        yAxisIndex: 1,
-                        data: [15, 23, 20, 15, 19, 33, 41]
-                    },
-                    {
-                        name: '电表',
-                        type: 'line',
-                        stack: '总量',
-                        data: [150, 432, 201, 154, 190, 430, 510]
-                    }
-                ]
+                legendData: [],
+                xAxisData: [],
+                seriesData: []
             },
-            barLChartData: {},
+            barLChartData: {
+                titleData: [],
+                yAxisData: [],
+                seriesData: []
+            },
             barRChartData: {
-                totalPower: 54800,
-                yAxisData: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10'],
-                seriesFixedObj: {
+                maxValue: 0,
+                totalPower: 0,
+                yAxisData: [],
+                seriesData: []
+            }
+        },
+        init: function() {
+            //地图图表初始化 ----大屏区位要素模块
+            // this.mapChartInit('chart-map-box');
+            this.getMapChartData();
+
+            // 第二区域 ----生产状况
+            // this.lineChartInit('chart-line-box');
+            this.getLineChartData();
+
+            // 第三区域 ----设备运行模块
+            // this.barLChartInit('chart-barL-box');
+            this.getBarLChartData();
+
+            // 第四区域 ----企业用电
+            // this.barRChartInit('chart-barR-box');
+            this.getBarRChartData();
+        },
+        getMapChartData: function() { //获取地图图表数据 ----大屏区位要素模块
+            var _this = this;
+
+            if (isMock) {
+                var reData = reApiData.locationFactorsData;
+
+                this.data.enterpriseName = reData.enterpriseName || '';
+                this.data.rating = reData.rating || '';
+                this.data.refreshDate = reData.refreshDate || '';
+
+                this.data.mapChartData.bankName = reData.bankName || '';
+                this.data.mapChartData.tagName = reData.tagName || '';
+                this.data.mapChartData.areaLocations = reData.areaLocations || [];
+
+                this.mapChartInit('chart-map-box');
+            } else {
+                httpRequest('get', locationFactorsApi, { 'enterprise': 1 }, true, 1, 1, null, function(data) {
+                    var reData = data.object;
+
+                    _this.data.enterpriseName = reData.enterpriseName || '';
+                    _this.data.rating = reData.rating || '';
+                    _this.data.refreshDate = reData.refreshDate || '';
+
+                    _this.data.mapChartData.bankName = reData.bankName || '';
+                    _this.data.mapChartData.tagName = reData.tagName || '';
+                    _this.data.mapChartData.areaLocations = reData.areaLocations || [];
+
+                    _this.mapChartInit('chart-map-box');
+                }, function(msg, code) {
+                    alert(msg);
+                });
+            }
+        },
+        getLineChartData: function() { //获取第二区域图表数据 ----生产状况
+            var _this = this;
+
+            if (isMock) {
+                var reData = reApiData.productionStatusData;
+
+                this.handleLineChartData(reData); //数据回调处理
+                this.lineChartInit('chart-line-box');
+            } else {
+                httpRequest('get', productionStatusApi, { 'enterprise': 1 }, true, 1, 1, null, function(data) {
+                    var reData = data.rows || [];
+
+                    _this.handleLineChartData(reData); //数据回调处理
+                    _this.lineChartInit('chart-line-box');
+                }, function(msg, code) {
+                    alert(msg);
+                });
+            }
+        },
+        getBarLChartData: function() { //获取第三区域图表数据 ----设备运行模块
+            var _this = this;
+
+            if (isMock) {
+                var reData = reApiData.equipmentOperationData;
+                this.setDeviceRunTime(5000, reData); //数据回调处理
+            } else {
+                httpRequest('get', equipmentOperationApi, { 'enterprise': 1 }, true, 1, 1, null, function(data) {
+                    var reData = data.rows || [];
+                    _this.setDeviceRunTime(5000, reData); //数据回调处理
+                }, function(msg, code) {
+                    alert(msg);
+                });
+            }
+        },
+        getBarRChartData: function() { //获取第四区域图表数据 ----企业用电
+            var _this = this;
+
+            if (isMock) {
+                var reData = reApiData.enterpriseElectricityData;
+                var reArr = reData.days || [];
+
+                var yAxisArr = [],
+                    seriesArr = [],
+                    itemObjData = [],
+                    maxValue = 0; //默认最大值
+                for (var i = 0; i < reArr.length; i++) {
+                    yAxisArr.push(reArr[i].day);
+                    itemObjData.push(reArr[i].value);
+                    if (maxValue < reArr[i].value) maxValue = reArr[i].value;
+                }
+
+                var maxLen = String(maxValue).length;
+                var maxCeilNum = '1';
+                for (var t = 0; t < maxLen - 1; t++) {
+                    maxCeilNum += '0';
+                }
+                maxCeilNum = Number(maxCeilNum);
+                var maxCeil = maxValue / maxCeilNum;
+                maxValue = Math.ceil(maxCeil) * maxCeilNum;
+
+                var itemObj = {
+                    name: '',
+                    type: 'bar',
+                    barWidth: 12,
+                    itemStyle: {
+                        normal: {
+                            color: '#004f9c',
+                            barBorderRadius: 12
+                        }
+                    },
+                    data: itemObjData
+                };
+                seriesArr.push(itemObj);
+
+                //背景条数据设定
+                var seriesFixedArr = [];
+                for (var j = 0; j < yAxisArr.length; j++) {
+                    seriesFixedArr.push(maxValue);
+                };
+                //加入背景条
+                seriesArr.push({
                     type: "bar",
                     barWidth: 12,
                     xAxisIndex: 0,
                     barGap: "-100%",
-                    data: [24, 24, 24, 24, 24, 24, 24, 24, 24, 24],
+                    data: seriesFixedArr,
                     itemStyle: {
                         normal: {
                             color: "#fff",
@@ -73,24 +174,40 @@ $(function() {
                         }
                     },
                     zlevel: -1
-                },
-                seriesData: [{
-                        type: "bar",
-                        barWidth: 12,
-                        xAxisIndex: 0,
-                        barGap: "-100%",
-                        data: [24, 24, 24, 24, 24, 24, 24, 24, 24, 24],
-                        itemStyle: {
-                            normal: {
-                                color: "#fff",
-                                borderColor: '#fff',
-                                borderWidth: 2,
-                                barBorderRadius: 12
-                            }
-                        },
-                        zlevel: -1
-                    },
-                    {
+                });
+
+                this.data.barRChartData.maxValue = maxValue;
+
+                this.data.barRChartData.totalPower = reData.total;
+                this.data.barRChartData.yAxisData = yAxisArr;
+                this.data.barRChartData.seriesData = seriesArr;
+
+                this.barRChartInit('chart-barR-box');
+            } else {
+                httpRequest('get', enterpriseElectricityApi, { 'enterprise': 1 }, true, 1, 1, null, function(data) {
+                    var reData = data.object || {};
+                    var reArr = reData.days || [];
+
+                    var yAxisArr = [],
+                        seriesArr = [],
+                        itemObjData = [],
+                        maxValue = 0; //默认最大值
+                    for (var i = 0; i < reArr.length; i++) {
+                        yAxisArr.push(reArr[i].day);
+                        itemObjData.push(reArr[i].value);
+                        if (maxValue < reArr[i].value) maxValue = reArr[i].value;
+                    }
+
+                    var maxLen = String(maxValue).length;
+                    var maxCeilNum = '1';
+                    for (var t = 0; t < maxLen - 1; t++) {
+                        maxCeilNum += '0';
+                    }
+                    maxCeilNum = Number(maxCeilNum);
+                    var maxCeil = maxValue / maxCeilNum;
+                    maxValue = Math.ceil(maxCeil) * maxCeilNum;
+
+                    var itemObj = {
                         name: '',
                         type: 'bar',
                         barWidth: 12,
@@ -100,89 +217,181 @@ $(function() {
                                 barBorderRadius: 12
                             }
                         },
-                        data: [5, 6, 10, 12, 5, 19, 13, 10, 3, 6]
-                    }
-                ]
+                        data: itemObjData
+                    };
+                    seriesArr.push(itemObj);
+
+                    //背景条数据设定
+                    var seriesFixedArr = [];
+                    for (var j = 0; j < yAxisArr.length; j++) {
+                        seriesFixedArr.push(maxValue);
+                    };
+                    //加入背景条
+                    seriesArr.push({
+                        type: "bar",
+                        barWidth: 12,
+                        xAxisIndex: 0,
+                        barGap: "-100%",
+                        data: seriesFixedArr,
+                        itemStyle: {
+                            normal: {
+                                color: "#fff",
+                                borderColor: '#fff',
+                                borderWidth: 2,
+                                barBorderRadius: 12
+                            }
+                        },
+                        zlevel: -1
+                    });
+
+                    _this.data.barRChartData.maxValue = maxValue;
+
+                    _this.data.barRChartData.totalPower = reData.total;
+                    _this.data.barRChartData.yAxisData = yAxisArr;
+                    _this.data.barRChartData.seriesData = seriesArr;
+
+                    _this.barRChartInit('chart-barR-box');
+                }, function(msg, code) {
+                    alert(msg);
+                });
             }
         },
-        init: function() {
-            //地图图表初始化 ----大屏区位要素模块
-            this.mapChartInit('chart-map-box');
-
-            // 第二区域 ----生产状况
-            this.lineChartInit('chart-line-box');
-
-            // 第三区域 ----设备运行模块
-            this.barLChartInit('chart-barL-box');
-
-            // 第四区域 ----企业用电
-            this.barRChartInit('chart-barR-box');
-        },
-        getMapChartData: function() { //获取地图图表数据 ----大屏区位要素模块
+        setDeviceRunTime: function(stime, reArr) { //设备运行模块 -- 回调数据格式处理 ----定时刷新
             var _this = this;
 
-            httpRequest('get', baseUrl + 'api', { 'enterprise': 1 }, true, 1, 1, null, function(data) {
-                var reData = data.object;
+            var tIndex = 0;
+            if (reArr.length) {
+                var sdaysArr = reArr[tIndex].days || [];
+                this.handleBarLChartTitle(reArr, tIndex);
+                this.handleBarLChartData(sdaysArr);
 
-                _this.data.enterpriseName = reData.enterpriseName || '';
-                _this.data.rating = reData.rating || '';
-                _this.data.refreshDate = reData.refreshDate || '';
+                console.log(this.data.barLChartData);
+                this.barLChartInit('chart-barL-box'); //初始化图表
+                var deviceTime = setInterval(function() {
+                    var daysArr = reArr[tIndex].days || [];
+                    _this.handleBarLChartTitle(reArr, tIndex);
+                    _this.handleBarLChartData(daysArr);
 
-                _this.data.mapChartData.bankName = reData.bankName || '';
-                _this.data.mapChartData.tagName = reData.tagName || '';
-                _this.data.mapChartData.areaLocations = reData.areaLocations || [];
+                    _this.barLChartInit('chart-barL-box'); //重新初始化图表
+                    tIndex++;
 
-                _this.mapChartInit('chart-map-box');
-            }, function(msg, code) {
-                alert(msg);
-            });
+                    if (tIndex === reArr.length) tIndex = 0;
+                }, stime);
+            }
         },
-        getLineChartData: function() { //获取第二区域图表数据 ----生产状况
-            var _this = this;
-
-            httpRequest('get', baseUrl + 'api', { 'enterprise': 1 }, true, 1, 1, null, function(data) {
-                var reData = data.rows || [];
-
-                _this.handleLineChartData(reData);
-                _this.lineChartInit('chart-line-box');
-            }, function(msg, code) {
-                alert(msg);
-            });
+        handleBarLChartTitle: function(reArr, index) { //设备运行模块 -- 回调数据格式处理 --标题设置
+            var legendTitleArr = [];
+            for (var i = 0; i < reArr.length; i++) {
+                var tItem = {
+                    text: reArr[i].deviceName,
+                    textStyle: {
+                        color: index === i ? '#e69013' : '#999999',
+                        fontSize: 15
+                    },
+                    textAlign: 'left',
+                    bottom: 30 + i * 10 + "%",
+                    right: '6%'
+                };
+                legendTitleArr.push(tItem); //获取循环标题
+            }
+            this.data.barLChartData.titleData = legendTitleArr;
         },
-        getBarLChartData: function() { //获取第三区域图表数据 ----设备运行模块
-            var _this = this;
+        handleBarLChartData: function(daysArr) { //设备运行模块 -- 回调数据格式处理
+            var yAxisArr = [],
+                seriesArr = [];
 
-            httpRequest('get', baseUrl + 'api', { 'enterprise': 1 }, true, 1, 1, null, function(data) {
-                var reData = data.rows || [];
-
-
-                _this.barLChartInit('chart-barL-box');
-            }, function(msg, code) {
-                alert(msg);
-            });
-        },
-        getBarRChartData: function() { //获取第四区域图表数据 ----企业用电
-            var _this = this;
-
-            httpRequest('get', baseUrl + 'api', { 'enterprise': 1 }, true, 1, 1, null, function(data) {
-                var reData = data.object || {};
-                var reArr = reData.days || [];
-
-                var yAxisArr = [],
-                    seriesArr = [_this.data.barRChartData.seriesFixedObj];
-                for (var i = 0; i < reArr.length; i++) {
-                    legendArr.push(reArr[i].day);
-                    seriesArr.push(reArr[i].value);
+            var notRunningArr = [],
+                runArr = [];
+            for (var j = 0; j < daysArr.length; j++) {
+                if ($.inArray(daysArr[j].day, yAxisArr) < 0) {
+                    yAxisArr.push(daysArr[j].day);
                 }
 
-                _this.data.barRChartData.totalPower = reData.total;
-                _this.data.barRChartData.yAxisData = yAxisArr;
-                _this.data.barRChartData.seriesData = seriesArr;
+                var stateDurationsArr = daysArr[j].stateDurations || [];
+                for (var m = 0; m < stateDurationsArr.length; m++) {
+                    stateDurationsArr[m].day = daysArr[j].day;
+                    if (stateDurationsArr[m].state) {
+                        runArr.push(stateDurationsArr[m]);
+                    } else {
+                        notRunningArr.push(stateDurationsArr[m]);
+                    }
+                }
+            }
 
-                _this.barRChartInit('chart-barR-box');
-            }, function(msg, code) {
-                alert(msg);
+            var jNotRunningArr = this.handleReArrChart(notRunningArr, 'day');
+            var jRunArr = this.handleReArrChart(runArr, 'day');
+
+            var reNotRunningArr = this.handleRunDataJson(jNotRunningArr, 0);
+            var reRunArr = this.handleRunDataJson(jRunArr, 1);
+            seriesArr = reRunArr.concat(reNotRunningArr);
+
+
+            //背景条数据设定
+            var seriesFixedArr = [];
+            for (var j = 0; j < yAxisArr.length; j++) {
+                seriesFixedArr.push(24);
+            };
+            //加入背景条
+            seriesArr.push({
+                type: "bar",
+                barWidth: 12,
+                xAxisIndex: 0,
+                barGap: "-100%",
+                data: seriesFixedArr,
+                itemStyle: {
+                    normal: {
+                        color: "#fff",
+                        borderColor: '#fff',
+                        borderWidth: 2,
+                        barBorderRadius: 12
+                    }
+                },
+                zlevel: -1
             });
+
+            this.data.barLChartData.yAxisData = yAxisArr;
+            this.data.barLChartData.seriesData = seriesArr;
+        },
+        handleRunDataJson: function(arr, type) { //设备运行模块 --数据格式化处理
+            var reArr = [];
+            var itemObjs = {
+                name: type ? '运行中' : '未运行',
+                type: 'bar',
+                barWidth: 12,
+                stack: '总量',
+                itemStyle: {
+                    normal: {
+                        color: type ? '#e69013' : '#fff',
+                        barBorderRadius: 12
+                    }
+                },
+                data: []
+            };
+            for (var i in arr) {
+                if (arr[i] instanceof Array) {
+                    var rarr = arr[i];
+                    for (var j in rarr) {
+                        var itemObj = {
+                            name: type ? '运行中' : '未运行',
+                            type: 'bar',
+                            barWidth: 12,
+                            stack: '总量',
+                            itemStyle: {
+                                normal: {
+                                    color: type ? '#e69013' : '#fff',
+                                    barBorderRadius: 12
+                                }
+                            },
+                            data: [rarr[j][0].duration]
+                        };
+                        reArr.push(itemObj);
+                    }
+                } else {
+                    itemObjs.data.push(arr[i].duration);
+                }
+            }
+            reArr.push(itemObjs);
+            return reArr;
         },
         handleLineChartData: function(reArr) { //生产状况 -- 回调数据格式处理
             var legendArr = [],
@@ -245,6 +454,9 @@ $(function() {
             $("#chart-title").html(this.data.regionName + '<br>' + this.data.enterpriseName); //中心区域标题
             $("#chart-score").text(this.data.rating); //企业评分
             $("#chart-uptate-time").text(this.data.refreshDate); //更新时间
+
+            $("#map-chart-bank").html(this.data.mapChartData.bankName);
+            $("#map-chart-lable").html(this.data.mapChartData.tagName);
         },
         handleMapChartOpt: function(chart) {
             // 获取百度地图实例，使用百度地图
@@ -279,7 +491,7 @@ $(function() {
                         color: '#fff',
                         fontSize: 18
                     },
-                    subtext: '更新时间：' + this.data.refreshDate,
+                    // subtext: '更新时间：' + this.data.refreshDate,
                     subtextStyle: {
                         color: '#fff',
                         fontSize: 12
@@ -361,22 +573,7 @@ $(function() {
         barLChartInit: function(id) { // 第三区域 ----设备运行模块
             var barLChart = echarts.init(document.getElementById(id));
             var barLOption = option = {
-                title: {
-                    text: '铣床',
-                    textStyle: {
-                        color: '#e69013',
-                        fontSize: 15
-                    },
-                    textAlign: 'middle',
-                    subtext: '冷轧机-01\n冷轧机-02',
-                    subtextStyle: {
-                        color: '#999999',
-                        fontSize: 17,
-                        lineHeight: 24
-                    },
-                    bottom: '38%',
-                    right: '-1%'
-                },
+                title: this.data.barLChartData.titleData,
                 legend: {
                     icon: 'roundRect',
                     orient: 'vertical',
@@ -422,83 +619,9 @@ $(function() {
                             color: '#fff'
                         }
                     },
-                    data: ['7-01', '7-02', '7-03', '7-04', '7-05', '7-06', '7-07', '7-08', '7-09', '7-10']
+                    data: this.data.barLChartData.yAxisData
                 },
-                series: [{
-                        name: '运行中',
-                        type: 'bar',
-                        barWidth: 12,
-                        stack: '总量',
-                        itemStyle: {
-                            normal: {
-                                color: '#e69013',
-                                barBorderRadius: 12
-                            }
-                        },
-                        data: [3, 3, 5, 2, 5, 2, 6, 4, 3, 4]
-                    },
-                    {
-                        name: '未运行',
-                        type: 'bar',
-                        barWidth: 12,
-                        stack: '总量',
-                        itemStyle: {
-                            normal: {
-                                show: true,
-                                color: '#fff',
-                                barBorderRadius: 12,
-                                borderWidth: 0,
-
-                            }
-                        },
-                        data: [6, 4, 2, 3, 2, 3, 3, 2, 7, 3]
-                    },
-                    {
-                        name: '运行中',
-                        type: 'bar',
-                        barWidth: 12,
-                        stack: '总量',
-                        itemStyle: {
-                            normal: {
-                                color: '#e69013',
-                                barBorderRadius: 12
-                            }
-                        },
-                        data: [2, 1, 1, 0, 2, 3, 1, 2, 3, 2]
-                    },
-                    {
-                        name: '未运行',
-                        type: 'bar',
-                        barWidth: 12,
-                        stack: '总量',
-                        itemStyle: {
-                            normal: {
-                                show: true,
-                                color: '#fff',
-                                barBorderRadius: 12,
-                                borderWidth: 0,
-
-                            }
-                        },
-                        data: [2, 3, 3, 4, 2, 5, 4, 1, 7, 3]
-                    },
-                    {
-                        type: "bar",
-                        barWidth: 12,
-                        xAxisIndex: 0,
-                        barGap: "-100%",
-                        data: [24, 24, 24, 24, 24, 24, 24, 24, 24, 24],
-                        itemStyle: {
-                            normal: {
-                                color: "#fff",
-                                borderColor: '#fff',
-                                borderWidth: 2,
-                                barBorderRadius: 12
-                            }
-                        },
-                        zlevel: -1
-                    }
-                ]
+                series: this.data.barLChartData.seriesData
             };
             barLChart.setOption(barLOption);
         },
@@ -521,7 +644,7 @@ $(function() {
                     left: '4%'
                 },
                 grid: {
-                    right: '3%',
+                    right: '5%',
                     left: '25%',
                     bottom: '6%',
                     containLabel: true
@@ -529,14 +652,14 @@ $(function() {
                 xAxis: [{
                     type: 'value',
                     position: 'top',
+                    min: 0,
+                    max: this.data.barRChartData.maxValue,
                     axisLine: {
                         lineStyle: {
                             type: 'solid',
                             color: '#fff'
                         }
-                    },
-                    min: 0,
-                    max: 24
+                    }
                 }, {
                     type: 'value',
                     axisLine: {
@@ -559,8 +682,40 @@ $(function() {
                 series: this.data.barRChartData.seriesData
             };
             barRChart.setOption(barROption);
+        },
+        // 将设备运行模块格式化数据
+        handleReArrChart: function(arr, str) {
+            var _arr = [],
+                _t = [];
+            // 临时变量
+            var _temp;
+
+            // 对数组的元素进行排序，并返回数组。 
+            arr = arr.sort(function(a, b) {
+                var s = a[str],
+                    t = b[str]
+                return s < t ? -1 : 1;
+            });
+
+            // 将相同类别的对象添加到统一个数组
+            for (var i in arr) {
+                if (arr[i][str] === _temp) {
+                    _t.push([arr[i]]);
+                } else {
+                    _temp = arr[i][str];
+                    _arr.push(arr[i]);
+                }
+            }
+            // 将最后的内容推出
+            _arr.push(_t);
+
+            return _arr
         }
     };
 
     app.init();
+
+    var appUptateTime = setInterval(function() {
+        app.init();
+    }, app.refreshTime);
 });

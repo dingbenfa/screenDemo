@@ -82,7 +82,11 @@ var reApiData = {
                             "state": 1
                         },
                         {
-                            "duration": 14,
+                            "duration": 3,
+                            "state": 0
+                        },
+                        {
+                            "duration": 11,
                             "state": 1
                         }
                     ]

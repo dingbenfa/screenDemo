@@ -103,11 +103,11 @@ $(function() {
 
             if (isMock) {
                 var reData = reApiData.equipmentOperationData;
-                this.setDeviceRunTime(5000, reData); //数据回调处理
+                this.setDeviceRunTime(120000, reData); //数据回调处理 --两分钟
             } else {
                 httpRequest('get', equipmentOperationApi, { 'enterprise': 1 }, true, 1, 1, null, function(data) {
                     var reData = data.rows || [];
-                    _this.setDeviceRunTime(5000, reData); //数据回调处理
+                    _this.setDeviceRunTime(120000, reData); //数据回调处理 --两分钟
                 }, function(msg, code) {
                     alert(msg);
                 });
@@ -259,22 +259,23 @@ $(function() {
         setDeviceRunTime: function(stime, reArr) { //设备运行模块 -- 回调数据格式处理 ----定时刷新
             var _this = this;
 
-            var tIndex = 0;
+            var tIndex = 1;
             if (reArr.length) {
                 var sdaysArr = reArr[tIndex].days || [];
                 this.handleBarLChartTitle(reArr, tIndex);
                 this.handleBarLChartData(sdaysArr);
+                // tIndex = 1;
 
-                console.log(this.data.barLChartData);
                 this.barLChartInit('chart-barL-box'); //初始化图表
                 var deviceTime = setInterval(function() {
                     var daysArr = reArr[tIndex].days || [];
                     _this.handleBarLChartTitle(reArr, tIndex);
                     _this.handleBarLChartData(daysArr);
 
+                    _this.clearChartInit('chart-barL-box'); //先清空图表
                     _this.barLChartInit('chart-barL-box'); //重新初始化图表
-                    tIndex++;
 
+                    tIndex++;
                     if (tIndex === reArr.length) tIndex = 0;
                 }, stime);
             }
@@ -323,8 +324,7 @@ $(function() {
 
             var reNotRunningArr = this.handleRunDataJson(jNotRunningArr, 0);
             var reRunArr = this.handleRunDataJson(jRunArr, 1);
-            seriesArr = reRunArr.concat(reNotRunningArr);
-
+            seriesArr = this.aryJoinAry(reRunArr, reNotRunningArr);
 
             //背景条数据设定
             var seriesFixedArr = [];
@@ -351,6 +351,8 @@ $(function() {
 
             this.data.barLChartData.yAxisData = yAxisArr;
             this.data.barLChartData.seriesData = seriesArr;
+
+            console.log(this.data.barLChartData);
         },
         handleRunDataJson: function(arr, type) { //设备运行模块 --数据格式化处理
             var reArr = [];
@@ -570,6 +572,10 @@ $(function() {
             };
             lineChart.setOption(lineOption);
         },
+        clearChartInit: function(id) {
+            var barLChart = echarts.init(document.getElementById(id));
+            barLChart.clear();
+        },
         barLChartInit: function(id) { // 第三区域 ----设备运行模块
             var barLChart = echarts.init(document.getElementById(id));
             var barLOption = option = {
@@ -710,12 +716,38 @@ $(function() {
             _arr.push(_t);
 
             return _arr
+        },
+        aryJoinAry: function(ary, ary2) { //两个数组的交叉合并
+            var itemAry = [];
+            var minLength;
+            //先拿到两个数组中长度较短的那个数组的长度
+            if (ary.length > ary2.length) {
+                minLength = ary2.length;
+            } else {
+                minLength = ary.length;
+            }
+            //将两个数组中较长的数组记录下来
+            var longAry = arguments[0].length > arguments[1].length ? arguments[0] : arguments[1];
+            //循环范围为较短的那个数组的长度
+            for (var i = 0; i < minLength; i++) {
+                //将数组放入临时数组中
+                itemAry.push(ary[i]);
+                itemAry.push(ary2[i])
+            }
+            //itemAry和多余的新数组拼接起来并返回。
+            return itemAry.concat(longAry.slice(minLength));
         }
     };
 
     app.init();
 
     var appUptateTime = setInterval(function() {
+        //清空图表
+        app.clearChartInit('chart-map-box');
+        app.clearChartInit('chart-line-box');
+        app.clearChartInit('chart-barL-box');
+        app.clearChartInit('chart-barR-box');
+
         app.init();
     }, app.refreshTime);
 });
